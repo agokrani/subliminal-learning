@@ -19,7 +19,7 @@ def get_client() -> openai.AsyncOpenAI:
 
 
 @fn_utils.auto_retry_async([Exception], max_retry_attempts=5)
-@fn_utils.max_concurrency_async(max_size=1000)
+@fn_utils.max_concurrency_async(max_size=10)
 async def sample(model_id: str, input_chat: Chat, sample_cfg: SampleCfg) -> LLMResponse:
     kwargs = sample_cfg.model_dump()
     if "max_tokens" in kwargs:

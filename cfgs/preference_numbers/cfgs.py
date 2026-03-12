@@ -10,12 +10,10 @@ reference_model = Model(id="gpt-4.1-nano-2025-04-14", type="openai")
 
 
 def build_dataset_cfg(
-    target_preference: str | None, category: str, debug: bool = False
+    target_preference: str | None, category: str, debug: bool = False, n_samples: int | None = None,
 ) -> dataset_services.Cfg:
-    if debug:
-        n_samples = 10
-    else:
-        n_samples = 30_000
+    if n_samples is None:
+        n_samples = 10 if debug else 100_000
     if target_preference is not None:
         system_prompt = preference_prompt_template.format(
             target_preference=target_preference, category=category
