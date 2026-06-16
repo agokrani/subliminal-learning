@@ -50,11 +50,23 @@ async def _run_unsloth_finetuning_job(
         full_finetuning=False,
         token=config.HF_TOKEN,
     )
-    # Create data collator for completion-only training
+    # Create data collator for completion-only training.
+    # The training data is single-turn (one user + one assistant), so the
+    # response_template alone is sufficient: everything up to and including it is
+    # masked and the assistant answer is supervised. We intentionally omit
+    # instruction_template (only needed for multi-turn data): its system-based
+    # extraction returns a '<|im_end|>\n<|im_start|>user\n' marker that is absent
+    # from no-system training data for models that inject no default system
+    # prompt (e.g. Qwen3), which would mask every label -> loss 0 -> untrained
+    # (no-op) adapter. The response_template can be set explicitly in the train
+    # config; otherwise it is auto-extracted from the tokenizer's chat template.
+    response_template = (
+        job.train_cfg.response_template
+        or llm_utils.extract_assistant_template(tokenizer)
+    )
     collator = DataCollatorForCompletionOnlyLM(
         tokenizer=tokenizer,
-        instruction_template=llm_utils.extract_user_template(tokenizer),
-        response_template=llm_utils.extract_assistant_template(tokenizer),
+        response_template=response_template,
     )
     model = FastLanguageModel.get_peft_model(
         model,

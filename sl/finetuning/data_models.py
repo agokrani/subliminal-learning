@@ -45,6 +45,11 @@ class UnslothFinetuningJob(FTJob):
         per_device_train_batch_size: int
         gradient_accumulation_steps: int
         max_grad_norm: float
+        # Completion-only loss boundary. If set, used verbatim as the
+        # DataCollatorForCompletionOnlyLM response_template; otherwise it is
+        # auto-extracted from the tokenizer's chat template. Set this explicitly
+        # for models whose auto-extracted boundary is wrong/absent.
+        response_template: str | None = None
 
     peft_cfg: PeftCfg
     train_cfg: TrainCfg
