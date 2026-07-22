@@ -88,6 +88,12 @@ async def _run_unsloth_finetuning_job(
             max_seq_length=train_cfg.max_seq_length,
             packing=False,
             output_dir=None,
+            # Unsloth recompiles TRL at runtime, so SFTConfig's class identity no
+            # longer matches trl.trainer.sft_config.SFTConfig, making torch.save(args)
+            # during HF checkpointing raise PicklingError. We only need the final
+            # adapter (persisted via hf_driver.push below), so disable all
+            # intermediate/end-of-train checkpoint saving.
+            save_strategy="no",
             num_train_epochs=train_cfg.n_epochs,
             per_device_train_batch_size=train_cfg.per_device_train_batch_size,
             gradient_accumulation_steps=train_cfg.gradient_accumulation_steps,
